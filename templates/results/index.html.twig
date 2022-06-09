@@ -3,34 +3,82 @@
 {% block title %}Results index{% endblock %}
 
 {% block body %}
-    <h1>Results index</h1>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>FullName</th>
-                <th>RaceTime</th>
-                <th>Placement</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for result in distanceMedium %}
-            <tr>
-                <td>{{ result.fullName }}</td>
-                <td>{{ result.raceTime }}</td>
-                <td>{{ result.placement }}</td>
-                <td>
-                    <a href="{{ path('app_results_edit', {'id': result.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<div class="container">
+    <div class="text-center">
+        <h1>{{ race.raceName }}</h1>
+        <h3>{{ race.date|date("F jS \\a\\t g:ia")}}</h3>
+    </div>
+    <hr>
+    <div>
+        <h2>Medium distance</h2>
+        <p>Average: </p> 
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th class="text-center">Time</th>
+                        <th class="text-center">Placement</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for result in distanceMedium %}
+                    <tr>
+                        <td>{{ result.fullName }}</td>
+                        <td class="text-center">{{ result.raceTime |trim('0', side='left') }}</td>
+                        <td class="text-center">{{ result.placement }}</td>
+                        <td>
+                            <a class="btn btn-success" href="{{ path('app_results_edit', {'id': result.id}) }}">Edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+    </div>
+    <hr>
+    <div>
+        <h2>Long distance</h2>
+        <p>Average</p> 
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th class="text-center">Time</th>
+                        <th class="text-center">Placement</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for result in distanceLong %}
+                    <tr>
+                        <td>{{ result.fullName }}</td>
+                        <td class="text-center">{{ result.raceTime |trim('0', side='left') }}</td>
+                        <td class="text-center">{{ result.placement }}</td>
+                        <td>
+                            <a class="btn btn-success" href="{{ path('app_results_edit', {'id': result.id}) }}">Edit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6">no records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+    </div>
 
-    <a href="{{ path('app_results_new') }}">Create new</a>
+    
+    <hr>
+    <div class="text-center">
+        <a class="btn btn-primary" href="{{ path('app_race_new') }}">Create new Race</a>
+    </div>
+    <br>
+    <br>
+</div>
+
 {% endblock %}
