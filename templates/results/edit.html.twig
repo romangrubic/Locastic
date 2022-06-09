@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Results{% endblock %}
+
+{% block body %}
+    <h1>Edit Results</h1>
+
+    {{ include('results/_form.html.twig') }}
+
+    <a href="{{ path('app_race_show', {'id': result.race.id}) }}">back to list</a>
+
+    {{ include('results/_delete_form.html.twig') }}
+{% endblock %}

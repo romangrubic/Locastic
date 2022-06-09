@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Results{% endblock %}
+
+{% block body %}
+    <h1>Results</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ result.id }}</td>
+            </tr>
+            <tr>
+                <th>FullName</th>
+                <td>{{ result.fullName }}</td>
+            </tr>
+            <tr>
+                <th>RaceTime</th>
+                <td>{{ result.raceTime ? result.raceTime|date('H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Distance</th>
+                <td>{{ result.distance }}</td>
+            </tr>
+            <tr>
+                <th>Placement</th>
+                <td>{{ result.placement }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_results_index') }}">back to list</a>
+
+    <a href="{{ path('app_results_edit', {'id': result.id}) }}">edit</a>
+
+    {{ include('results/_delete_form.html.twig') }}
+{% endblock %}
