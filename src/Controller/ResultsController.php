@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Results;
 use App\Form\ResultsType;
 use App\Repository\ResultsRepository;
+use App\Services\Calculate;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -59,7 +60,7 @@ class ResultsController extends AbstractController
     /**
      * @Route("/{id}/edit", name="app_results_edit", methods={"GET", "POST"})
      */
-    public function edit(Request $request, Results $result, ResultsRepository $resultsRepository): Response
+    public function edit(Request $request, Results $result, ResultsRepository $resultsRepository, Calculate $calculate): Response
     {
         $form = $this->createForm(ResultsType::class, $result);
         $form->handleRequest($request);
@@ -67,6 +68,10 @@ class ResultsController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $resultsRepository->add($result, true);
             // dd($result->getRace()->getId());
+
+            // Recalculating placements
+            $calculate->placement($result->getRace()->getId(), $result->getDistance());
+            
 
             return $this->redirectToRoute('app_race_show', ['id' => $result->getRace()->getId()], Response::HTTP_SEE_OTHER);
         }

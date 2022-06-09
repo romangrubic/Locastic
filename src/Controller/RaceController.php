@@ -7,6 +7,7 @@ use App\Entity\Results;
 use App\Form\RaceType;
 use App\Repository\RaceRepository;
 use App\Repository\ResultsRepository;
+use App\Services\Calculate;
 use App\Services\ImportCSV;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -15,7 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use League\Csv\Reader;
+
 
 /**
  * @Route("/race")
@@ -35,7 +36,7 @@ class RaceController extends AbstractController
     /**
      * @Route("/new", name="app_race_new", methods={"GET", "POST"})
      */
-    public function new(ManagerRegistry $doctrine, Request $request, RaceRepository $raceRepository, ImportCSV $importCSV): Response
+    public function new(ManagerRegistry $doctrine, Request $request, RaceRepository $raceRepository, ImportCSV $importCSV, Calculate $calculate): Response
     {
         $race = new Race();
 
@@ -55,51 +56,19 @@ class RaceController extends AbstractController
 
                 $em->persist($race);
                 $em->flush();
-
-                // Last id
-                $lastId = $race->getId();
-
-                // dd($lastId);
-            
-                $reader = Reader::createFromPath($this->getParameter('uploads_dir') . '/' . $filename, 'r');
-
-                $results = $reader->getRecords();
-
-                $importCSV->writeIntoDb($results, $race);
+        
+                // Reads CSV file and inserts data into DB
+                $importCSV->writeIntoDb($race, $filename);
 
 
                 // Medium distance placements
-                $results = $doctrine->getRepository(Results::class)->findBy(['race' => $lastId, 'distance' => 'medium'], ['raceTime' => 'ASC']);
-
-                $placement = 1;
-
-                foreach ($results as $row) {
-                    $result = $row->setPlacement($placement);
-
-                    $em->persist($result);
-
-                    $placement++;
-                }
-                $em->flush();
+                $calculate->placement($race->getId(), 'medium');
 
                 //  Long distance placements 
-
-                $results = $doctrine->getRepository(Results::class)->findBy(['race' => $lastId, 'distance' => 'long'], ['raceTime' => 'ASC']);
-
-                $placement = 1;
-
-                foreach ($results as $row) {
-                    $result = $row->setPlacement($placement);
-
-                    $em->persist($result);
-
-                    $placement++;
-                }
-                $em->flush();
+                $calculate->placement($race->getId(), 'long');
 
                 // Deleting uploaded file
                 $importCSV->delete($filename);
-                
 
             }
 
@@ -134,35 +103,4 @@ class RaceController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="app_race_edit", methods={"GET", "POST"})
-     */
-    public function edit(Request $request, Race $race, RaceRepository $raceRepository): Response
-    {
-        $form = $this->createForm(RaceType::class, $race);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $raceRepository->add($race, true);
-
-            return $this->redirectToRoute('app_race_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->renderForm('race/edit.html.twig', [
-            'race' => $race,
-            'form' => $form,
-        ]);
-    }
-
-    /**
-     * @Route("/{id}", name="app_race_delete", methods={"POST"})
-     */
-    public function delete(Request $request, Race $race, RaceRepository $raceRepository): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$race->getId(), $request->request->get('_token'))) {
-            $raceRepository->remove($race, true);
-        }
-
-        return $this->redirectToRoute('app_race_index', [], Response::HTTP_SEE_OTHER);
-    }
 }
