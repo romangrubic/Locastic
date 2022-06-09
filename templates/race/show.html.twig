@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Race{% endblock %}
+
+{% block body %}
+    <h1>Race</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ race.id }}</td>
+            </tr>
+            <tr>
+                <th>RaceName</th>
+                <td>{{ race.raceName }}</td>
+            </tr>
+            <tr>
+                <th>Date</th>
+                <td>{{ race.date ? race.date|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_race_index') }}">back to list</a>
+
+    <a href="{{ path('app_race_edit', {'id': race.id}) }}">edit</a>
+
+    {{ include('race/_delete_form.html.twig') }}
+{% endblock %}
