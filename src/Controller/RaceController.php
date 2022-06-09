@@ -7,6 +7,7 @@ use App\Entity\Results;
 use App\Form\RaceType;
 use App\Repository\RaceRepository;
 use App\Repository\ResultsRepository;
+use App\Services\ImportCSV;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use LDAP\Result;
@@ -34,7 +35,7 @@ class RaceController extends AbstractController
     /**
      * @Route("/new", name="app_race_new", methods={"GET", "POST"})
      */
-    public function new(ManagerRegistry $doctrine, Request $request, RaceRepository $raceRepository): Response
+    public function new(ManagerRegistry $doctrine, Request $request, RaceRepository $raceRepository, ImportCSV $importCSV): Response
     {
         $race = new Race();
 
@@ -43,17 +44,15 @@ class RaceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
             $em = $this->getDoctrine()->getManager();
+            
             $file = $request->files->get('race')['file'];
 
             if ($file) {
-                $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
-
-                $file->move(
-                    $this->getParameter('uploads_dir'),
-                    $filename
-                );
                 
+                $filename = $importCSV->upload($file);
+
                 $em->persist($race);
                 $em->flush();
 
@@ -66,27 +65,10 @@ class RaceController extends AbstractController
 
                 $results = $reader->getRecords();
 
-                $rowNumber = 1;
+                $importCSV->writeIntoDb($results, $race);
 
-                foreach ($results as $row) {
-                    if ($rowNumber == 1){
-                        $rowNumber++;
-                    }
-                    // dd($row);
-                    // die;
-                    $result = (new Results())
-                        ->setRace($race)
-                        ->setFullName($row[0])
-                        ->setDistance($row[1])
-                        ->setRaceTime($row[2]);
-
-                    $em->persist($result);
-                }
-
-                $em->flush();
 
                 // Medium distance placements
-
                 $results = $doctrine->getRepository(Results::class)->findBy(['race' => $lastId, 'distance' => 'medium'], ['raceTime' => 'ASC']);
 
                 $placement = 1;
@@ -116,7 +98,8 @@ class RaceController extends AbstractController
                 $em->flush();
 
                 // Deleting uploaded file
-                unlink($this->getParameter('uploads_dir') . '/' . $filename);
+                $importCSV->delete($filename);
+                
 
             }
 
@@ -132,12 +115,20 @@ class RaceController extends AbstractController
     /**
      * @Route("/{id}", name="app_race_show", methods={"GET"})
      */
-    public function show(ResultsRepository $resultsRepository, int $id): Response
+    public function show(ResultsRepository $resultsRepository, RaceRepository $race, int $id): Response
     {
-        dd($resultsRepository->mediumAverage($id));
+        // dd($resultsRepository->mediumAverage($id));
+        // $o = $race->findOneBy(['id' => $id]);
+
+        // $race = [
+        //     'title' => $o->getRaceName(),
+        // ];
+
+        // dd($race);
 
         return $this->render('results/index.html.twig', [
-            'distanceMediumAverage' => $resultsRepository->mediumAverage($id),
+            // 'distanceMediumAverage' => $resultsRepository->mediumAverage($id),
+            'race' => $race->findOneBy(['id' => $id]),
             'distanceMedium' => $resultsRepository->findBy(['race' => $id, 'distance' => 'medium'], ['placement' => 'ASC']),
             'distanceLong' => $resultsRepository->findBy(['race' => $id, 'distance' => 'long'], ['placement' => 'ASC']),
         ]);
