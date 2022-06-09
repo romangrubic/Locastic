@@ -17,37 +17,6 @@ use Symfony\Component\Routing\Annotation\Route;
 class ResultsController extends AbstractController
 {
     /**
-     * @Route("/", name="app_results_index", methods={"GET"})
-     */
-    public function index(ResultsRepository $resultsRepository): Response
-    {
-        return $this->render('results/index.html.twig', [
-            'results' => $resultsRepository->findAll(),
-        ]);
-    }
-
-    /**
-     * @Route("/new", name="app_results_new", methods={"GET", "POST"})
-     */
-    public function new(Request $request, ResultsRepository $resultsRepository): Response
-    {
-        $result = new Results();
-        $form = $this->createForm(ResultsType::class, $result);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $resultsRepository->add($result, true);
-
-            return $this->redirectToRoute('app_results_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->renderForm('results/new.html.twig', [
-            'result' => $result,
-            'form' => $form,
-        ]);
-    }
-
-    /**
      * @Route("/{id}", name="app_results_show", methods={"GET"})
      */
     public function show(Results $result): Response
@@ -66,8 +35,13 @@ class ResultsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            // Adding 0 as first char if needed
+            if (strpos($result->getRaceTime(), ':') == 1 ) {
+                $result->setRaceTime('0' . $result->getRaceTime()); 
+            }
+
             $resultsRepository->add($result, true);
-            // dd($result->getRace()->getId());
 
             // Recalculating placements
             $calculate->placement($result->getRace()->getId(), $result->getDistance());
@@ -80,17 +54,5 @@ class ResultsController extends AbstractController
             'result' => $result,
             'form' => $form,
         ]);
-    }
-
-    /**
-     * @Route("/{id}", name="app_results_delete", methods={"POST"})
-     */
-    public function delete(Request $request, Results $result, ResultsRepository $resultsRepository): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$result->getId(), $request->request->get('_token'))) {
-            $resultsRepository->remove($result, true);
-        }
-
-        return $this->redirectToRoute('app_results_index', [], Response::HTTP_SEE_OTHER);
     }
 }

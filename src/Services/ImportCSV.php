@@ -2,12 +2,9 @@
 
 namespace App\Services;
 
-use App\Entity\Race;
 use App\Entity\Results;
-use App\Services\ContainerInterface;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
+use League\Csv\Reader;
 
 use Symfony\Component\DependencyInjection\ContainerInterface as DependencyInjectionContainerInterface;
 
@@ -36,8 +33,12 @@ class ImportCSV
         return $filename;
     }
 
-    public function writeIntoDb($results, $race)
+    public function writeIntoDb($race, $filename)
     {
+        $reader = Reader::createFromPath($this->container->getParameter('uploads_dir') . '/' . $filename, 'r');
+
+        $results = $reader->getRecords();
+
         $rowNumber = 1;
 
                 foreach ($results as $row) {
@@ -46,6 +47,10 @@ class ImportCSV
                     }
                     // dd($row);
                     // die;
+                    if (strpos($row[2], ':') == 1 ) {
+                        $row[2] = '0' . $row[2]; 
+                    }
+
                     $result = (new Results())
                         ->setRace($race)
                         ->setFullName($row[0])
