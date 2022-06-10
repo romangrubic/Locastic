@@ -11,7 +11,7 @@ use App\{Entity\Race,
 use App\Repository\{RaceRepository,
     ResultsRepository};
 use App\Services\{Calculate,
-    ImportCSV};
+    CSV};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request,
@@ -28,7 +28,7 @@ class RaceController extends AbstractController
      * Setting properties
      */
     private RaceRepository $raceRepository;
-    private ImportCSV $importCSV;
+    private CSV $CSV;
     private Calculate $calculate;
     private EntityManagerInterface $em;
     private ResultsRepository $resultsRepository;
@@ -38,24 +38,23 @@ class RaceController extends AbstractController
      * __construct
      *
      * @param  RaceRepository $raceRepository
-     * @param  ImportCSV $importCSV
+     * @param  CSV $CSV
      * @param  Calculate $calculate
      * @param  EntityManagerInterface $em
      * @param  ResultsRepository $resultsRepository
      * @return void
      */
     public function __construct(RaceRepository $raceRepository,
-                                ImportCSV $importCSV,
+                                CSV $CSV,
                                 Calculate $calculate,
                                 EntityManagerInterface $em,
                                 ResultsRepository $resultsRepository)
     {
         $this->raceRepository = $raceRepository;
-        $this->importCSV = $importCSV;
+        $this->CSV = $CSV;
         $this->calculate = $calculate;
         $this->em = $em;
         $this->resultsRepository = $resultsRepository;
-
     }
 
     /**
@@ -75,7 +74,7 @@ class RaceController extends AbstractController
                 /**
                  * Storing uploaded CSV file
                  */
-                $filename = $this->importCSV->upload($file);
+                $filename = $this->CSV->upload($file);
 
                 /**
                  * Storing Race object
@@ -86,7 +85,7 @@ class RaceController extends AbstractController
                 /**
                  * Reads CSV file and inserts Results data into DB
                  */
-                $this->importCSV->writeIntoDb($race, $filename);
+                $this->CSV->writeIntoDb($race, $filename);
 
                 /**
                  * Calculating distance placements
@@ -100,7 +99,7 @@ class RaceController extends AbstractController
                 /**
                  * Deleting uploaded file
                  */
-                $this->importCSV->delete($filename);
+                $this->CSV->delete($filename);
             }
 
             return $this->redirectToRoute('app_race_show', ['id' => $race->getId()], Response::HTTP_SEE_OTHER);

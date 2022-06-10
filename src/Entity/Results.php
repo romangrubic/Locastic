@@ -1,12 +1,16 @@
 <?php
 
+/**
+ * This file contains Results entity and its methods
+ */
+
 namespace App\Entity;
 
-use App\Repository\ResultsRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity(repositoryClass=ResultsRepository::class)
+ * @ORM\Entity(repositoryClass=App\Repository\ResultsRepository::class)
  */
 class Results
 {
@@ -19,16 +23,19 @@ class Results
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank()
      */
     private $fullName;
 
     /**
-     * @ORM\Column(type="time")
+     * @ORM\Column(type="string")
+     * @Assert\NotBlank()
      */
     private $raceTime;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotNull()
      */
     private $distance;
 

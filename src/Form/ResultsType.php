@@ -1,17 +1,31 @@
 <?php
 
+/**
+ * This file contains Results form type
+ */
+
 namespace App\Form;
 
 use App\Entity\Results;
-use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\{AbstractType,
+    FormBuilderInterface};
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\{Length,
+    Regex};
 
+/**
+ * Results form type class
+ */
 class ResultsType extends AbstractType
-{
+{    
+    /**
+     * buildForm
+     *
+     * @param  FormBuilderInterface $builder
+     * @param  array $options
+     * @return void
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -42,13 +56,19 @@ class ResultsType extends AbstractType
                 'constraints' => [
                     new Regex([
                         'pattern' => '/[0-9][0-9][:][0-5][0-9][:][0-5][0-9]/',
-                        'message' => 'Format should be xx:xx:xx'
+                        'message' => 'Format: xx:xx:xx'
                     ]),
 
                 ]
             ]);
     }
-
+    
+    /**
+     * configureOptions
+     *
+     * @param  OptionsResolver $resolver
+     * @return void
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

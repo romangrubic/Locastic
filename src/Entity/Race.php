@@ -1,10 +1,13 @@
 <?php
 
+/**
+ * This file contains Race entity and its methods
+ */
+
 namespace App\Entity;
 
-use App\Repository\RaceRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\{ArrayCollection,
+    Collection};
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -97,7 +100,12 @@ class Race
 
         return $this;
     }
-
+    
+    /**
+     * __toString
+     *
+     * @return void
+     */
     public function __toString()
     {
         return $this->raceName;

@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * This file contains Results repository class and methods
+ */
+
 namespace App\Repository;
 
 use App\Entity\Results;
@@ -15,12 +19,25 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Results[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class ResultsRepository extends ServiceEntityRepository
-{
+{    
+    /**
+     * __construct
+     *
+     * @param  ManagerRegistry $registry
+     * @return void
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Results::class);
     }
-
+    
+    /**
+     * add
+     *
+     * @param  Results $entity
+     * @param  bool $flush
+     * @return void
+     */
     public function add(Results $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
@@ -29,7 +46,14 @@ class ResultsRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
-
+    
+    /**
+     * remove
+     *
+     * @param  Results $entity
+     * @param  bool $flush
+     * @return void
+     */
     public function remove(Results $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
@@ -40,7 +64,7 @@ class ResultsRepository extends ServiceEntityRepository
     }
     
     /**
-     * findTimeByDistance
+     * Find results by distance. Return only race time
      *
      * @param  int $id
      * @param  string $distance
@@ -58,29 +82,4 @@ class ResultsRepository extends ServiceEntityRepository
            ->getResult()
        ;
     }
-
-//    /**
-//     * @return Results[] Returns an array of Results objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('r.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Results
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
 }

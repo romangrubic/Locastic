@@ -1,8 +1,13 @@
 <?php
 
+/**
+ * This file contains Calculate class and helper methods for calculatin placement order and average time by distance
+ */
+
 namespace App\Services;
 
 use App\Entity\Results;
+use App\Repository\ResultsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -12,18 +17,11 @@ use Doctrine\Persistence\ManagerRegistry;
 class Calculate
 {    
     /**
-     * em
-     *
-     * @var EntityManagerInterface
+     * Setting properties
      */
-    private $em; 
-       
-    /**
-     * doctrine
-     *
-     * @var ManagerRegistry
-     */
-    private $doctrine;
+    private EntityManagerInterface $em; 
+    private ManagerRegistry $doctrine;
+    private ResultsRepository $resultsRepository;
     
     /**
      * __construct
@@ -32,14 +30,15 @@ class Calculate
      * @param  ManagerRegistry $doctrine
      * @return void
      */
-    public function __construct(EntityManagerInterface $em, ManagerRegistry $doctrine)
+    public function __construct(EntityManagerInterface $em, ManagerRegistry $doctrine, ResultsRepository $resultsRepository)
     {
         $this->em = $em;
         $this->doctrine = $doctrine;
+        $this->resultsRepository = $resultsRepository;
     }
    
     /**
-     * Calculates placement after insert and each update based on distance
+     * Calculates placement after insert and each edit Result, based on distance
      *
      * @param  int $lastId
      * @param  string $string
@@ -47,25 +46,25 @@ class Calculate
      */
     public function placement(int $lastId, string $string): void
     {
-        $results = $this->doctrine->getRepository(Results::class)->findBy(['race' => $lastId, 'distance' => $string], ['raceTime' => 'ASC']);
+        $results = $this->resultsRepository->findBy(['race' => $lastId, 'distance' => $string], ['raceTime' => 'ASC']);
+        $placement = 1;
 
-                $placement = 1;
+        foreach ($results as $row) {
+            $result = $row->setPlacement($placement);
 
-                foreach ($results as $row) {
-                    $result = $row->setPlacement($placement);
+            $this->em->persist($result);
 
-                    $this->em->persist($result);
-
-                    $placement++;
-                }
-                $this->em->flush();
+            $placement++;
+        }
+        $this->em->flush();
     }
 
         
     /**
      * Calculates average time for distance
+     * Not the best I'll admit that, but does its job.
      *
-     * @param  mixed $results
+     * @param mixed $results
      * @return string
      */
     public function average($results): string

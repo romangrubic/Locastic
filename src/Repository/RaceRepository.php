@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * This file contains Race repository class and methods
+ */
+
 namespace App\Repository;
 
 use App\Entity\Race;
@@ -15,12 +19,25 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Race[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class RaceRepository extends ServiceEntityRepository
-{
+{    
+    /**
+     * __construct
+     *
+     * @param  ManagerRegistry $registry
+     * @return void
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Race::class);
     }
-
+    
+    /**
+     * add
+     *
+     * @param  Race $entity
+     * @param  bool $flush
+     * @return void
+     */
     public function add(Race $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
@@ -29,7 +46,14 @@ class RaceRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
-
+    
+    /**
+     * remove
+     *
+     * @param  Race $entity
+     * @param  bool $flush
+     * @return void
+     */
     public function remove(Race $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
@@ -38,29 +62,4 @@ class RaceRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
-
-//    /**
-//     * @return Race[] Returns an array of Race objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('r.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Race
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
 }

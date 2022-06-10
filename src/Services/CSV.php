@@ -1,26 +1,34 @@
 <?php
 
+/**
+ * This file contains CSV
+ */
 namespace App\Services;
 
 use App\Entity\Results;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Csv\Reader;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-use Symfony\Component\DependencyInjection\ContainerInterface as DependencyInjectionContainerInterface;
-
-class ImportCSV
+class CSV
 {
     private $container;
     private $em;
 
-    public function __construct(DependencyInjectionContainerInterface $container, EntityManagerInterface $em)
+    public function __construct(ContainerInterface $container, EntityManagerInterface $em)
     {
         $this->container = $container;
         $this->em = $em;
     }
 
-
-    public function upload($file)
+    
+    /**
+     * Upload File on server
+     *
+     * @param  mixed $file
+     * @return string
+     */
+    public function upload($file):string
     {
 
         $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
@@ -32,8 +40,15 @@ class ImportCSV
 
         return $filename;
     }
-
-    public function writeIntoDb($race, $filename)
+    
+    /**
+     * Write all CSV into result table
+     *
+     * @param  mixed $race
+     * @param  string $filename
+     * @return void
+     */
+    public function writeIntoDb($race, $filename):void
     {
         $reader = Reader::createFromPath($this->container->getParameter('uploads_dir') . '/' . $filename, 'r');
 
@@ -62,8 +77,14 @@ class ImportCSV
 
                 $this->em->flush();
     }
-
-    public function delete($filename)
+    
+    /**
+     * Delete CSV file after inserting into DB
+     *
+     * @param  string $filename
+     * @return void
+     */
+    public function delete($filename):void
     {
         unlink($this->container->getParameter('uploads_dir') . '/' . $filename);
     }
