@@ -35,16 +35,14 @@ class ResultsType extends AbstractType
                     'placeholder' => 'John Doe',
                     'class' => 'input-group mb-3 text-center border border-4 rounded',
                 ],
+                'empty_data' => '',
                 'constraints' => [
-                    new Regex([
-                        'pattern' => '/^[a-zA-Z0-9_ ]*$/',
-                        'message' => 'Alphanumeric characters and spaces only.'
-                    ]),
                     new Length([
                         'min' => 3,
                         'max' => 255
-                    ])
-                ]
+                    ]),
+                ],
+
             ])
             ->add('raceTime', TextType::class, [
                 'required' => true,
@@ -53,12 +51,13 @@ class ResultsType extends AbstractType
                     'placeholder' => 'xx:xx:xx',
                     'class' => 'input-group mb-3 text-center border border-4 rounded',
                 ],
+                'empty_data' => '',
                 'constraints' => [
                     new Regex([
-                        'pattern' => '/[0-9][0-9][:][0-5][0-9][:][0-5][0-9]/',
-                        'message' => 'Format: xx:xx:xx'
+                        'pattern' => '/^[0-9]{1,2}([:][0-5][0-9]){2}$/',
+                        'message' => 'Wrong format. Format: (0)2:51:26'
                     ]),
-
+                    
                 ]
             ]);
     }

@@ -14,7 +14,8 @@ use Symfony\Component\Form\Extension\Core\Type\{DateType,
     TextType};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\{File,
-    Length};
+    Length,
+    NotNull};
 
 /**
  * Race form type class
@@ -42,6 +43,7 @@ class RaceType extends AbstractType
                         'min' => 3,
                         'max' => 255
                     ]),
+                    new NotNull(),
                 ]
             ])
             ->add('date', DateType::class, [
@@ -65,7 +67,8 @@ class RaceType extends AbstractType
                             "text/csv",
                             "text/plain"
                         ],
-                    ])
+                    ]),
+                    new NotNull(),
                 ]
             ])
         ;
