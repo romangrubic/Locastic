@@ -7,6 +7,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Regex;
 
 class ResultsType extends AbstractType
@@ -24,6 +25,10 @@ class ResultsType extends AbstractType
                     new Regex([
                         'pattern' => '/^[a-zA-Z0-9_ ]*$/',
                         'message' => 'Alphanumeric characters and spaces only.'
+                    ]),
+                    new Length([
+                        'min' => 3,
+                        'max' => 255
                     ])
                 ]
             ])
