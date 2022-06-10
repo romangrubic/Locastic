@@ -64,20 +64,18 @@ class ResultsRepository extends ServiceEntityRepository
     }
     
     /**
-     * Find results by distance. Return only race time
+     * Find results by race id. Order by placement ascending
      *
      * @param  int $id
-     * @param  string $distance
      * @return array
      */
-    public function findTimeByDistance(int $id, string $distance): array
+    public function findResultsByRaceId(int $id): array
     {
         return $this->createQueryBuilder('r')
-            ->select('r.raceTime')
+            ->select('r.id, r.fullName, r.raceTime, r.placement, r.distance')
            ->andWhere('r.race = :id')
-           ->andWhere('r.distance = :distance')
            ->setParameter('id', $id)
-           ->setParameter('distance', $distance)
+           ->orderBy('r.placement', 'ASC')
            ->getQuery()
            ->getResult()
        ;
