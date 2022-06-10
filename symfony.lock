@@ -101,6 +101,9 @@
     "psr/event-dispatcher": {
         "version": "1.0.0"
     },
+    "psr/link": {
+        "version": "1.0.0"
+    },
     "psr/log": {
         "version": "1.1.4"
     },
@@ -325,6 +328,9 @@
     },
     "symfony/var-exporter": {
         "version": "v5.4.9"
+    },
+    "symfony/web-link": {
+        "version": "v5.4.3"
     },
     "symfony/web-profiler-bundle": {
         "version": "5.4",

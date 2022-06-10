@@ -3,11 +3,15 @@
 {% block title %}Edit Results{% endblock %}
 
 {% block body %}
+<div class="container text-center w-25 mt-5 pt-3 pb-3 border border-success rounded">
     <h1>Edit Results</h1>
 
     {{ include('results/_form.html.twig') }}
 
-    <a href="{{ path('app_race_show', {'id': result.race.id}) }}">back to list</a>
+    <div>
+        <a class="btn btn-warning m-2" href="{{ path('app_race_show', {'id': result.race.id}) }}">Back to Race</a>
+    </div>
 
     {{ include('results/_delete_form.html.twig') }}
+</div>
 {% endblock %}
