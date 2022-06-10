@@ -8,8 +8,7 @@ namespace App\Controller;
 
 use App\{Entity\Results,
     Form\ResultsType,
-    Repository\ResultsRepository,
-    Services\Calculate};
+    Services\Form};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request,
     Response};
@@ -23,21 +22,17 @@ class ResultsController extends AbstractController
     /**
      * Setting properties
      */
-    private ResultsRepository $resultsRepository;
-    private Calculate $calculate;
+    private Form $formService;
     
     /**
      * __construct
      *
-     * @param  ResultsRepository $resultsRepository
-     * @param  Calculate $calculate
+     * @param  Form $formService
      * @return void
      */
-    public function __construct(ResultsRepository $resultsRepository,
-                                Calculate $calculate)
+    public function __construct(Form $formService)
     {
-        $this->resultsRepository = $resultsRepository;
-        $this->calculate = $calculate;
+        $this->formService = $formService;
     }
     
     /**
@@ -49,20 +44,10 @@ class ResultsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
             /**
-             * Adding 0 as first char if needed
+             * Service for editing result and recalculating placements
              */
-            if (strpos($result->getRaceTime(), ':') == 1 ) {
-                $result->setRaceTime('0' . $result->getRaceTime()); 
-            }
-            $this->resultsRepository->add($result, true);
-
-            /**
-             * Recalculate placements
-             */
-            $this->calculate->placement($result->getRace()->getId(), $result->getDistance());
-
+            $this->formService->editResult($result);
             return $this->redirectToRoute('app_race_show', ['id' => $result->getRace()->getId()], Response::HTTP_SEE_OTHER);
         }
 

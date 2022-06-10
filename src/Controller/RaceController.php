@@ -11,7 +11,7 @@ use App\{Entity\Race,
 use App\Repository\{RaceRepository,
     ResultsRepository};
 use App\Services\{Calculate,
-    CSV};
+    CSV, Form};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request,
@@ -28,33 +28,29 @@ class RaceController extends AbstractController
      * Setting properties
      */
     private RaceRepository $raceRepository;
-    private CSV $CSV;
     private Calculate $calculate;
-    private EntityManagerInterface $em;
     private ResultsRepository $resultsRepository;
+    private Form $formService;
     
     
     /**
      * __construct
      *
      * @param  RaceRepository $raceRepository
-     * @param  CSV $CSV
      * @param  Calculate $calculate
      * @param  EntityManagerInterface $em
      * @param  ResultsRepository $resultsRepository
      * @return void
      */
     public function __construct(RaceRepository $raceRepository,
-                                CSV $CSV,
                                 Calculate $calculate,
-                                EntityManagerInterface $em,
-                                ResultsRepository $resultsRepository)
+                                ResultsRepository $resultsRepository,
+                                Form $formService)
     {
         $this->raceRepository = $raceRepository;
-        $this->CSV = $CSV;
         $this->calculate = $calculate;
-        $this->em = $em;
         $this->resultsRepository = $resultsRepository;
+        $this->formService = $formService;
     }
 
     /**
@@ -72,37 +68,12 @@ class RaceController extends AbstractController
 
             if ($file) {
                 /**
-                 * Storing uploaded CSV file
+                 * Service class for adding new Race and import CSV file
                  */
-                $filename = $this->CSV->upload($file);
-
-                /**
-                 * Storing Race object
-                 */
-                $this->em->persist($race);
-                $this->em->flush();
-        
-                /**
-                 * Reads CSV file and inserts Results data into DB
-                 */
-                $this->CSV->writeIntoDb($race, $filename);
-
-                /**
-                 * Calculating distance placements
-                 */
-                $distances = ['medium', 'long'];
-
-                foreach ($distances as $distance) {
-                    $this->calculate->placement($race->getId(), $distance);
-                }
-
-                /**
-                 * Deleting uploaded file
-                 */
-                $this->CSV->delete($filename);
+                $this->formService->insertRaceAndCSV($file, $race);
+                
+                return $this->redirectToRoute('app_race_show', ['id' => $race->getId()], Response::HTTP_SEE_OTHER);
             }
-
-            return $this->redirectToRoute('app_race_show', ['id' => $race->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->renderForm('race/new.html.twig', [
