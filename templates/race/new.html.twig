@@ -3,12 +3,11 @@
 {% block title %}New Race{% endblock %}
 
 {% block body %}
-<div class="container text-center">
-    <h1>Create new Race</h1>
+<div class="container text-center w-25 mt-5 p-4 border border-success rounded">
+    <h1 class="m-3">Add new Race</h1>
 
     {{ include('race/_form.html.twig') }}
 
-    <a href="{{ path('app_race_index') }}">back to list</a>
 </div>
 
 {% endblock %}

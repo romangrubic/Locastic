@@ -4,16 +4,19 @@
 
 {% block body %}
 
-<div class="container">
-    <div class="text-center">
+<div class="container w-50">
+    <div class="text-center mt-5">
         <h1>{{ race.raceName }}</h1>
         <h3>{{ race.date|date("F jS \\a\\t g:ia")}}</h3>
     </div>
+    <div class="text-center mt-2">
+        <a class="btn btn-primary" href="{{ path('app_race_new') }}">Add new race</a>
+    </div>
     <hr>
-    <div>
-        <h2>Medium distance</h2>
+    <div class="m-5">
+        <h4 class="fw-bold">Medium distance</h4>
         <p>Average: {{ avgMedium }} </p> 
-            <table class="table table-hover">
+            <table class="table table-hover border">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -41,10 +44,10 @@
             </table>
     </div>
     <hr>
-    <div>
-        <h2>Long distance</h2>
+    <div class="m-5">
+        <h4 class="fw-bold">Long distance</h4>
         <p>Average: {{ avgLong}} </p> 
-            <table class="table table-hover">
+            <table class="table table-hover border">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -71,14 +74,6 @@
                 </tbody>
             </table>
     </div>
-
-    
-    <hr>
-    <div class="text-center">
-        <a class="btn btn-primary" href="{{ path('app_race_new') }}">Create new Race</a>
-    </div>
-    <br>
-    <br>
 </div>
 
 {% endblock %}

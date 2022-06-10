@@ -11,13 +11,12 @@ use App\{Entity\Race,
 use App\Repository\{RaceRepository,
     ResultsRepository};
 use App\Services\{Calculate,
-    CSV, Form};
+    Form};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request,
     Response};
 use Symfony\Component\Routing\Annotation\Route;
-
 
 /**
  * @Route("/")
@@ -31,7 +30,6 @@ class RaceController extends AbstractController
     private Calculate $calculate;
     private ResultsRepository $resultsRepository;
     private Form $formService;
-    
     
     /**
      * __construct
@@ -83,7 +81,7 @@ class RaceController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="app_race_show", methods={"GET"})
+     * @Route("/race/{id}", name="app_race_show", methods={"GET"})
      */
     public function show(int $id): Response
     {

@@ -6,10 +6,8 @@
 
 namespace App\Services;
 
-use App\Entity\Results;
 use App\Repository\ResultsRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * Calculate class is a service class 
@@ -20,20 +18,18 @@ class Calculate
      * Setting properties
      */
     private EntityManagerInterface $em; 
-    private ManagerRegistry $doctrine;
     private ResultsRepository $resultsRepository;
     
     /**
      * __construct
      *
      * @param  EntityManagerInterface $em
-     * @param  ManagerRegistry $doctrine
+     * @param  ResultsRepository $resultsRepository
      * @return void
      */
-    public function __construct(EntityManagerInterface $em, ManagerRegistry $doctrine, ResultsRepository $resultsRepository)
+    public function __construct(EntityManagerInterface $em, ResultsRepository $resultsRepository)
     {
         $this->em = $em;
-        $this->doctrine = $doctrine;
         $this->resultsRepository = $resultsRepository;
     }
    
