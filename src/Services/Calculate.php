@@ -60,24 +60,44 @@ class Calculate
      * Calculates average time for distance
      * Not the best I'll admit that, but does its job.
      *
-     * @param mixed $results
+     * @param array $results
+     * @param string $results
      * @return string
      */
-    public function average($results): string
+    public function average(array $results, string $distance): string
     {
+        /**
+         * Filling array with race time from only required distance
+         */
+        $array = [];
+
+        foreach ($results as $result) {
+            if($result['distance'] == $distance) {
+                $array[] = $result['raceTime'];
+            }
+        }
+
+        /**
+         * Source: https://www.calculatorsoup.com/calculators/time/decimal-to-time-calculator.php
+         * 
+         * Separates hours, minutes and second from each race time into their respective variable,
+         * then multiplying each variable to get that value in seconds.
+         * Use gmdate php function to convert given seconds (divided by how many results there are) into hh:mm:ss format
+         */
         $count = 0;
         $h = 0;
         $m = 0;
         $s = 0;
 
-        foreach ($results as $row) {
-            $hours = (int) substr($row['raceTime'], 0 ,2);
+        foreach ($array as $row) {
+            // dd($row);
+            $hours = (int) substr($row, 0 ,2);
             $h += $hours;
 
-            $minutes = (int) substr($row['raceTime'], 3 ,5);
+            $minutes = (int) substr($row, 3 ,5);
             $m += $minutes;
 
-            $seconds = (int) substr($row['raceTime'], 6 ,8);
+            $seconds = (int) substr($row, 6 ,8);
             $s += $seconds;
 
             $count++;
@@ -85,8 +105,6 @@ class Calculate
 
         $totalSeconds = ($h * 3600) + ($m * 60) + $s;
 
-        $avg = gmdate('H:i:s', $totalSeconds/$count);
-
-        return $avg;
+        return gmdate('H:i:s', $totalSeconds/$count);
     }
 }
