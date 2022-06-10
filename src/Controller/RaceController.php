@@ -1,17 +1,18 @@
 <?php
 
+/**
+ * This file contains controller for Race (Race entity).
+ */
+
 namespace App\Controller;
 
 use App\Entity\Race;
-use App\Entity\Results;
 use App\Form\RaceType;
 use App\Repository\RaceRepository;
 use App\Repository\ResultsRepository;
-use App\Services\Calculate;
-use App\Services\ImportCSV;
+use App\Services\{Calculate,
+    ImportCSV};
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
-use LDAP\Result;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,40 +37,36 @@ class RaceController extends AbstractController
     /**
      * @Route("/new", name="app_race_new", methods={"GET", "POST"})
      */
-    public function new(ManagerRegistry $doctrine, Request $request, RaceRepository $raceRepository, ImportCSV $importCSV, Calculate $calculate): Response
+    public function new(Request $request, ImportCSV $importCSV, Calculate $calculate, EntityManagerInterface $em): Response
     {
         $race = new Race();
 
         $form = $this->createForm(RaceType::class, $race);
-
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            $em = $this->getDoctrine()->getManager();
-            
             $file = $request->files->get('race')['file'];
 
             if ($file) {
-                
+                // Storing uploaded CSV file
                 $filename = $importCSV->upload($file);
 
+                // Storing Race object
                 $em->persist($race);
                 $em->flush();
         
-                // Reads CSV file and inserts data into DB
+                // Reads CSV file and inserts Results data into DB
                 $importCSV->writeIntoDb($race, $filename);
 
+                // Calculating distance placements
+                $distances = ['medium', 'long'];
 
-                // Medium distance placements
-                $calculate->placement($race->getId(), 'medium');
-
-                //  Long distance placements 
-                $calculate->placement($race->getId(), 'long');
+                foreach ($distances as $distance) {
+                    $calculate->placement($race->getId(), $distance);
+                }
 
                 // Deleting uploaded file
                 $importCSV->delete($filename);
-
             }
 
             return $this->redirectToRoute('app_race_index', [], Response::HTTP_SEE_OTHER);
@@ -84,23 +81,23 @@ class RaceController extends AbstractController
     /**
      * @Route("/{id}", name="app_race_show", methods={"GET"})
      */
-    public function show(ResultsRepository $resultsRepository, RaceRepository $race, int $id): Response
+    public function show(ResultsRepository $resultsRepository, RaceRepository $race, int $id, Calculate $calculate): Response
     {
-        // dd($resultsRepository->mediumAverage($id));
-        // $o = $race->findOneBy(['id' => $id]);
+        $resultsMedium = $resultsRepository->findTimeByDistance($id, 'medium');
 
-        // $race = [
-        //     'title' => $o->getRaceName(),
-        // ];
+        $avgMedium = $calculate->average($resultsMedium);
 
-        // dd($race);
+        $resultsLong = $resultsRepository->findTimeByDistance($id, 'long');
 
+        $avgLong = $calculate->average($resultsLong);
+
+    
         return $this->render('results/index.html.twig', [
-            // 'distanceMediumAverage' => $resultsRepository->mediumAverage($id),
+            'avgMedium' => $avgMedium,
+            'avgLong' => $avgLong,
             'race' => $race->findOneBy(['id' => $id]),
             'distanceMedium' => $resultsRepository->findBy(['race' => $id, 'distance' => 'medium'], ['placement' => 'ASC']),
             'distanceLong' => $resultsRepository->findBy(['race' => $id, 'distance' => 'long'], ['placement' => 'ASC']),
         ]);
     }
-
 }

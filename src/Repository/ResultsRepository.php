@@ -38,13 +38,22 @@ class ResultsRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
-
-    public function mediumAverage(int $id)
+    
+    /**
+     * findTimeByDistance
+     *
+     * @param  int $id
+     * @param  string $distance
+     * @return array
+     */
+    public function findTimeByDistance(int $id, string $distance): array
     {
         return $this->createQueryBuilder('r')
-            ->select('avg(r.raceTime) as mediumAverage')
+            ->select('r.raceTime')
            ->andWhere('r.race = :id')
+           ->andWhere('r.distance = :distance')
            ->setParameter('id', $id)
+           ->setParameter('distance', $distance)
            ->getQuery()
            ->getResult()
        ;
