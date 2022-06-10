@@ -86,6 +86,11 @@ class RaceController extends AbstractController
     public function show(int $id): Response
     {
         /**
+         * OPTIMIZATION
+         * Number of total queries could be reduced from 5 to 3, but I have issues accessing race time when doing so.
+         */
+
+        /**
          * Calculate medium average
          */
         $resultsMedium = $this->resultsRepository->findTimeByDistance($id, 'medium');
@@ -97,7 +102,6 @@ class RaceController extends AbstractController
         $resultsLong = $this->resultsRepository->findTimeByDistance($id, 'long');
         $avgLong = $this->calculate->average($resultsLong);
 
-    
         return $this->render('results/index.html.twig', [
             'avgMedium' => $avgMedium,
             'avgLong' => $avgLong,
