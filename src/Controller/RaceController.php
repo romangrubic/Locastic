@@ -6,38 +6,62 @@
 
 namespace App\Controller;
 
-use App\Entity\Race;
-use App\Form\RaceType;
-use App\Repository\RaceRepository;
-use App\Repository\ResultsRepository;
+use App\{Entity\Race,
+    Form\RaceType};
+use App\Repository\{RaceRepository,
+    ResultsRepository};
 use App\Services\{Calculate,
     ImportCSV};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{Request,
+    Response};
 use Symfony\Component\Routing\Annotation\Route;
 
 
 /**
- * @Route("/race")
+ * @Route("/")
  */
 class RaceController extends AbstractController
-{
+{   
     /**
-     * @Route("/", name="app_race_index", methods={"GET"})
+     * Setting properties
      */
-    public function index(RaceRepository $raceRepository): Response
+    private RaceRepository $raceRepository;
+    private ImportCSV $importCSV;
+    private Calculate $calculate;
+    private EntityManagerInterface $em;
+    private ResultsRepository $resultsRepository;
+    
+    
+    /**
+     * __construct
+     *
+     * @param  RaceRepository $raceRepository
+     * @param  ImportCSV $importCSV
+     * @param  Calculate $calculate
+     * @param  EntityManagerInterface $em
+     * @param  ResultsRepository $resultsRepository
+     * @return void
+     */
+    public function __construct(RaceRepository $raceRepository,
+                                ImportCSV $importCSV,
+                                Calculate $calculate,
+                                EntityManagerInterface $em,
+                                ResultsRepository $resultsRepository)
     {
-        return $this->render('race/index.html.twig', [
-            'races' => $raceRepository->findAll(),
-        ]);
+        $this->raceRepository = $raceRepository;
+        $this->importCSV = $importCSV;
+        $this->calculate = $calculate;
+        $this->em = $em;
+        $this->resultsRepository = $resultsRepository;
+
     }
 
     /**
-     * @Route("/new", name="app_race_new", methods={"GET", "POST"})
+     * @Route("/", name="app_race_new", methods={"GET", "POST"})
      */
-    public function new(Request $request, ImportCSV $importCSV, Calculate $calculate, EntityManagerInterface $em): Response
+    public function new(Request $request): Response
     {
         $race = new Race();
 
@@ -48,28 +72,38 @@ class RaceController extends AbstractController
             $file = $request->files->get('race')['file'];
 
             if ($file) {
-                // Storing uploaded CSV file
-                $filename = $importCSV->upload($file);
+                /**
+                 * Storing uploaded CSV file
+                 */
+                $filename = $this->importCSV->upload($file);
 
-                // Storing Race object
-                $em->persist($race);
-                $em->flush();
+                /**
+                 * Storing Race object
+                 */
+                $this->em->persist($race);
+                $this->em->flush();
         
-                // Reads CSV file and inserts Results data into DB
-                $importCSV->writeIntoDb($race, $filename);
+                /**
+                 * Reads CSV file and inserts Results data into DB
+                 */
+                $this->importCSV->writeIntoDb($race, $filename);
 
-                // Calculating distance placements
+                /**
+                 * Calculating distance placements
+                 */
                 $distances = ['medium', 'long'];
 
                 foreach ($distances as $distance) {
-                    $calculate->placement($race->getId(), $distance);
+                    $this->calculate->placement($race->getId(), $distance);
                 }
 
-                // Deleting uploaded file
-                $importCSV->delete($filename);
+                /**
+                 * Deleting uploaded file
+                 */
+                $this->importCSV->delete($filename);
             }
 
-            return $this->redirectToRoute('app_race_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_race_show', ['id' => $race->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->renderForm('race/new.html.twig', [
@@ -81,23 +115,37 @@ class RaceController extends AbstractController
     /**
      * @Route("/{id}", name="app_race_show", methods={"GET"})
      */
-    public function show(ResultsRepository $resultsRepository, RaceRepository $race, int $id, Calculate $calculate): Response
+    public function show(int $id): Response
     {
-        $resultsMedium = $resultsRepository->findTimeByDistance($id, 'medium');
+        /**
+         * Calculate medium average
+         */
+        $resultsMedium = $this->resultsRepository->findTimeByDistance($id, 'medium');
+        $avgMedium = $this->calculate->average($resultsMedium);
 
-        $avgMedium = $calculate->average($resultsMedium);
-
-        $resultsLong = $resultsRepository->findTimeByDistance($id, 'long');
-
-        $avgLong = $calculate->average($resultsLong);
+        /**
+         * Calculate long average
+         */
+        $resultsLong = $this->resultsRepository->findTimeByDistance($id, 'long');
+        $avgLong = $this->calculate->average($resultsLong);
 
     
         return $this->render('results/index.html.twig', [
             'avgMedium' => $avgMedium,
             'avgLong' => $avgLong,
-            'race' => $race->findOneBy(['id' => $id]),
-            'distanceMedium' => $resultsRepository->findBy(['race' => $id, 'distance' => 'medium'], ['placement' => 'ASC']),
-            'distanceLong' => $resultsRepository->findBy(['race' => $id, 'distance' => 'long'], ['placement' => 'ASC']),
+            'race' => $this->raceRepository->findOneBy(['id' => $id]),
+            'distanceMedium' => $this->resultsRepository->findBy(['race' => $id, 'distance' => 'medium'], ['placement' => 'ASC']),
+            'distanceLong' => $this->resultsRepository->findBy(['race' => $id, 'distance' => 'long'], ['placement' => 'ASC']),
+        ]);
+    }
+
+    /**
+     * @Route("/all", name="app_race_index", methods={"GET"})
+     */
+    public function showAll(): Response
+    {
+        return $this->render('race/index.html.twig', [
+            'races' => $this->raceRepository->findAll(),
         ]);
     }
 }

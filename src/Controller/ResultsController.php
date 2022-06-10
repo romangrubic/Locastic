@@ -1,14 +1,18 @@
 <?php
 
+/**
+ * This file contains controller for Race (Race entity).
+ */
+
 namespace App\Controller;
 
-use App\Entity\Results;
-use App\Form\ResultsType;
-use App\Repository\ResultsRepository;
-use App\Services\Calculate;
+use App\{Entity\Results,
+    Form\ResultsType,
+    Repository\ResultsRepository,
+    Services\Calculate};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{Request,
+    Response};
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -17,35 +21,47 @@ use Symfony\Component\Routing\Annotation\Route;
 class ResultsController extends AbstractController
 {
     /**
-     * @Route("/{id}", name="app_results_show", methods={"GET"})
+     * Setting properties
      */
-    public function show(Results $result): Response
+    private ResultsRepository $resultsRepository;
+    private Calculate $calculate;
+    
+    /**
+     * __construct
+     *
+     * @param  ResultsRepository $resultsRepository
+     * @param  Calculate $calculate
+     * @return void
+     */
+    public function __construct(ResultsRepository $resultsRepository,
+                                Calculate $calculate)
     {
-        return $this->render('results/show.html.twig', [
-            'result' => $result,
-        ]);
+        $this->resultsRepository = $resultsRepository;
+        $this->calculate = $calculate;
     }
-
+    
     /**
      * @Route("/{id}/edit", name="app_results_edit", methods={"GET", "POST"})
      */
-    public function edit(Request $request, Results $result, ResultsRepository $resultsRepository, Calculate $calculate): Response
+    public function edit(Request $request, Results $result ): Response
     {
         $form = $this->createForm(ResultsType::class, $result);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            // Adding 0 as first char if needed
+            /**
+             * Adding 0 as first char if needed
+             */
             if (strpos($result->getRaceTime(), ':') == 1 ) {
                 $result->setRaceTime('0' . $result->getRaceTime()); 
             }
+            $this->resultsRepository->add($result, true);
 
-            $resultsRepository->add($result, true);
-
-            // Recalculating placements
-            $calculate->placement($result->getRace()->getId(), $result->getDistance());
-            
+            /**
+             * Recalculate placements
+             */
+            $this->calculate->placement($result->getRace()->getId(), $result->getDistance());
 
             return $this->redirectToRoute('app_race_show', ['id' => $result->getRace()->getId()], Response::HTTP_SEE_OTHER);
         }
