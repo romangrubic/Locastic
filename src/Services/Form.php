@@ -43,7 +43,7 @@ class Form
     }
     
     /**
-     * insertRaceAndCSV
+     * Inserts race details into DB and uploads, reads, inserts results into DB and deletes CSV file
      *
      * @param  mixed $file
      * @param  mixed $race
@@ -54,7 +54,7 @@ class Form
         /**
          * Storing uploaded CSV file
          */
-        $filename = $this->CSV->upload($file);
+        $filename = $this->CSV->uploadFile($file);
 
         /**
          * Storing Race object
@@ -65,7 +65,7 @@ class Form
         /**
          * Reads CSV file and inserts Results data into DB
          */
-        $data = $this->CSV->readCSV($filename);
+        $data = $this->CSV->readFile($filename);
 
         $this->CSV->insertIntoDB($race, $data);
 
@@ -81,7 +81,7 @@ class Form
         /**
          * Deleting uploaded file
          */
-        $this->CSV->delete($filename);
+        $this->CSV->deleteFile($filename);
     }
         
     /**

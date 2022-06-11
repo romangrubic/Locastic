@@ -17,8 +17,8 @@ class CSV
     /**
      * Setting properties
      */
-    private $container;
-    private $em;
+    private ContainerInterface $container;
+    private EntityManagerInterface $em;
     
     /**
      * __construct
@@ -39,7 +39,7 @@ class CSV
      * @param  mixed $file
      * @return string
      */
-    public function upload($file):string
+    public function uploadFile($file):string
     {
         $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
 
@@ -52,12 +52,12 @@ class CSV
     }
         
     /**
-     * Read CSV file and prepare data
+     * Read CSV file and returns data array
      *
      * @param  string $filename
      * @return array
      */
-    public function readCSV(string $filename): array
+    public function readFile(string $filename): array
     {
         $csvFile = file_get_contents($this->container->getParameter('uploads_dir') . '/' . $filename);
         $lines = explode(PHP_EOL, $csvFile);
@@ -77,7 +77,7 @@ class CSV
      * @param  array $data
      * @return void
      */
-    public function insertIntoDB($race, $data): void
+    public function insertIntoDB($race, array $data): void
     {
         foreach ($data as $row) {
             /**
@@ -120,7 +120,7 @@ class CSV
      * @param  string $filename
      * @return void
      */
-    public function delete(string $filename):void
+    public function deleteFile(string $filename):void
     {
         unlink($this->container->getParameter('uploads_dir') . '/' . $filename);
     }    
