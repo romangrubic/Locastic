@@ -15,7 +15,7 @@
     <hr>
     <div class="m-5">
         <h4 class="fw-bold">Medium distance</h4>
-        <p>Average: {{ avgMedium }} </p> 
+        <p>Average: {{ avgMedium|trim('0', side='left') }} </p> 
         <table class="table table-hover border">
             <thead>
                 <tr>
@@ -32,7 +32,7 @@
                     <td>{{ result.fullName }}</td>
                     <td class="text-center">{{ result.raceTime |trim('0', side='left') }}</td>
                     <td class="text-center">{{ result.placement }}</td>
-                    <td>
+                    <td class="p-1">
                         <a class="btn btn-success" href="{{ path('app_results_edit', {'id': result.id}) }}">Edit</a>
                     </td>
                 </tr>
@@ -48,7 +48,7 @@
     <hr>
     <div class="m-5">
         <h4 class="fw-bold">Long distance</h4>
-        <p>Average: {{ avgLong }} </p> 
+        <p>Average: {{ avgLong|trim('0', side='left') }} </p> 
         <table class="table table-hover border">
             <thead>
                 <tr>
@@ -65,7 +65,7 @@
                     <td>{{ result.fullName }}</td>
                     <td class="text-center">{{ result.raceTime |trim('0', side='left') }}</td>
                     <td class="text-center">{{ result.placement }}</td>
-                    <td>
+                    <td  class="p-1">
                         <a class="btn btn-success" href="{{ path('app_results_edit', {'id': result.id}) }}">Edit</a>
                     </td>
                 </tr>

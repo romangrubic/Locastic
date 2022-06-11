@@ -65,7 +65,9 @@ class Form
         /**
          * Reads CSV file and inserts Results data into DB
          */
-        $this->CSV->writeIntoDb($race, $filename);
+        $data = $this->CSV->readCSV($filename);
+
+        $this->CSV->insertIntoDB($race, $data);
 
         /**
          * Calculating distance placements

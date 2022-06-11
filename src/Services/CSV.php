@@ -7,7 +7,6 @@ namespace App\Services;
 
 use App\Entity\Results;
 use Doctrine\ORM\EntityManagerInterface;
-use League\Csv\Reader;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -51,45 +50,68 @@ class CSV
 
         return $filename;
     }
+        
+    /**
+     * Read CSV file and prepare data
+     *
+     * @param  string $filename
+     * @return array
+     */
+    public function readCSV(string $filename): array
+    {
+        $csvFile = file_get_contents($this->container->getParameter('uploads_dir') . '/' . $filename);
+        $lines = explode(PHP_EOL, $csvFile);
+        $data = [];
+
+        foreach ($lines as $line) {
+            $data[] = str_getcsv($line);
+        }
+
+        return $data;
+    }
     
     /**
-     * Read and write CSV rows into result table
+     * Insert data into DB
      *
      * @param  mixed $race
-     * @param  string $filename
+     * @param  array $data
      * @return void
      */
-    public function writeIntoDb($race, string $filename):void
+    public function insertIntoDB($race, $data): void
     {
-        $reader = Reader::createFromPath($this->container->getParameter('uploads_dir') . '/' . $filename, 'r');
+        foreach ($data as $row) {
+            /**
+             * Skips first row that has row names (not row data) as in example CSV
+             */
+            if ($row[0] == "fullName") {
+                continue;
+            }
 
-        $results = $reader->getRecords();
+            /**
+             * Skip if row doesn't have all three data points.
+             */
+            if (count($row) != 3) {
+                continue;
+            }
 
-        $rowNumber = 1;
+            /**
+             * Adding zero if needed for hours
+             * Format is xx:xx:xx
+             */
+            if (strpos($row[2], ':') == 1 ) {
+                $row[2] = '0' . $row[2]; 
+            }
 
-                foreach ($results as $row) {
-                    /**
-                     * Skips first row that has row names (not row data)
-                     */
-                    if ($rowNumber == 1){
-                        $rowNumber++;
-                        continue;
-                    }
+            $result = (new Results())
+                ->setRace($race)
+                ->setFullName($row[0])
+                ->setDistance($row[1])
+                ->setRaceTime($row[2]);
 
-                    if (strpos($row[2], ':') == 1 ) {
-                        $row[2] = '0' . $row[2]; 
-                    }
+            $this->em->persist($result);
+        }
 
-                    $result = (new Results())
-                        ->setRace($race)
-                        ->setFullName($row[0])
-                        ->setDistance($row[1])
-                        ->setRaceTime($row[2]);
-
-                    $this->em->persist($result);
-                }
-
-                $this->em->flush();
+        $this->em->flush();
     }
     
     /**
@@ -101,5 +123,5 @@ class CSV
     public function delete(string $filename):void
     {
         unlink($this->container->getParameter('uploads_dir') . '/' . $filename);
-    }
+    }    
 }
